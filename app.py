@@ -6,6 +6,124 @@ import numpy as np
 
 app = FastAPI()
 
+FEATURE_NAMES = [
+    'year',
+    'age',
+    'years_homeless',
+    'gender',
+    'race',
+    'mental_health',
+    'substance_use',
+    'outdoor_sleeping',
+    'shelter_type',
+    'youth',
+    'indigenous_flag',
+    'lgbtq',
+    'immigrant',
+    'foster_care_history',
+    'incarceration_history',
+    'no_income',
+    'housing_loss_income',
+    'housing_loss_health',
+]
+
+FEATURE_LABELS = {
+    'year': 'Year',
+    'age': 'Age',
+    'years_homeless': 'Years Homeless',
+    'gender': 'Gender',
+    'race': 'Race',
+    'mental_health': 'Mental Health',
+    'substance_use': 'Substance Use',
+    'outdoor_sleeping': 'Outdoor Sleeping',
+    'shelter_type': 'Shelter Type',
+    'youth': 'Youth',
+    'indigenous_flag': 'Indigenous Flag',
+    'lgbtq': 'LGBTQ',
+    'immigrant': 'Immigrant',
+    'foster_care_history': 'Foster Care History',
+    'incarceration_history': 'Incarceration History',
+    'no_income': 'No Income',
+    'housing_loss_income': 'Housing Loss Due to Income',
+    'housing_loss_health': 'Housing Loss Due to Health',
+}
+
+FALLBACK_IMPORTANCE = {
+    'mental_health': 0.17,
+    'substance_use': 0.16,
+    'outdoor_sleeping': 0.14,
+    'years_homeless': 0.12,
+    'no_income': 0.1,
+    'incarceration_history': 0.09,
+    'foster_care_history': 0.08,
+    'housing_loss_income': 0.05,
+    'housing_loss_health': 0.04,
+    'age': 0.03,
+    'youth': 0.02,
+}
+
+
+def get_feature_importance_ranking(loaded_model):
+    try:
+        if loaded_model is None:
+            raise ValueError('No model loaded')
+
+        if hasattr(loaded_model, 'feature_importances_'):
+            importances = np.asarray(loaded_model.feature_importances_, dtype=float)
+            if importances.size == len(FEATURE_NAMES):
+                ranked = sorted(
+                    zip(FEATURE_NAMES, importances.tolist()),
+                    key=lambda item: item[1],
+                    reverse=True,
+                )
+                return [
+                    {
+                        'feature': feature_name,
+                        'label': FEATURE_LABELS.get(feature_name, feature_name),
+                        'importance': float(importance),
+                    }
+                    for feature_name, importance in ranked
+                ]
+
+        booster = None
+        if hasattr(loaded_model, 'get_booster'):
+            booster = loaded_model.get_booster()
+        elif hasattr(loaded_model, 'booster'):
+            booster = loaded_model.booster()
+
+        if booster is not None and hasattr(booster, 'get_score'):
+            raw_scores = booster.get_score(importance_type='gain')
+            named_scores = []
+            for index, feature_name in enumerate(FEATURE_NAMES):
+                score = float(raw_scores.get(f'f{index}', 0.0))
+                named_scores.append((feature_name, score))
+
+            named_scores.sort(key=lambda item: item[1], reverse=True)
+            return [
+                {
+                    'feature': feature_name,
+                    'label': FEATURE_LABELS.get(feature_name, feature_name),
+                    'importance': importance,
+                }
+                for feature_name, importance in named_scores
+            ]
+    except Exception:
+        pass
+
+    fallback_ranked = sorted(
+        FEATURE_NAMES,
+        key=lambda feature_name: FALLBACK_IMPORTANCE.get(feature_name, 0.0),
+        reverse=True,
+    )
+    return [
+        {
+            'feature': feature_name,
+            'label': FEATURE_LABELS.get(feature_name, feature_name),
+            'importance': float(FALLBACK_IMPORTANCE.get(feature_name, 0.0)),
+        }
+        for feature_name in fallback_ranked
+    ]
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -104,7 +222,8 @@ def predict(request: PredictionRequest):
             'probability': {
                 'not_chronic': float(probability[0]),
                 'chronic': float(probability[1])
-            }
+            },
+            'feature_importance': get_feature_importance_ranking(model),
         }
     
     except Exception as e:

@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import './Form.css'
+import { useState } from 'react'
 
 function Form({ onPredictionComplete }) {
   const [currentPage, setCurrentPage] = useState(1)
@@ -24,6 +23,30 @@ function Form({ onPredictionComplete }) {
     housing_loss_income: '',
     housing_loss_health: '',
   })
+
+  const resetForm = () => {
+    setCurrentPage(1)
+    setFormData({
+      year: '',
+      age: '',
+      years_homeless: '',
+      gender: '',
+      race: '',
+      mental_health: '',
+      substance_use: '',
+      outdoor_sleeping: '',
+      shelter_type: '',
+      youth: '',
+      indigenous_flag: '',
+      lgbtq: '',
+      immigrant: '',
+      foster_care_history: '',
+      incarceration_history: '',
+      no_income: '',
+      housing_loss_income: '',
+      housing_loss_health: '',
+    })
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -60,7 +83,8 @@ function Form({ onPredictionComplete }) {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          onPredictionComplete(data.prediction, data.probability)
+          onPredictionComplete(data.prediction, data.probability, data.feature_importance || [])
+          resetForm()
         } else {
           alert('Error: ' + data.error)
         }
@@ -74,12 +98,18 @@ function Form({ onPredictionComplete }) {
       })
   }
 
+  const fieldWrapperClass = 'flex flex-col'
+  const fieldLabelClass = 'mb-2 text-sm font-semibold text-gray-700'
+  const fieldInputClass =
+    'rounded-md border border-gray-300 bg-white px-3 py-3 text-base text-gray-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
+
   // Page 1: Demographics and Personal Info (9 fields)
   const page1Fields = (
     <>
-      <div className="form-group">
-        <label htmlFor="year">Year</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="year">Year</label>
         <input
+          className={fieldInputClass}
           type="number"
           id="year"
           name="year"
@@ -89,9 +119,10 @@ function Form({ onPredictionComplete }) {
         />
       </div>
 
-      <div className="form-group">
-        <label htmlFor="age">Age</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="age">Age</label>
         <input
+          className={fieldInputClass}
           type="number"
           id="age"
           name="age"
@@ -101,9 +132,10 @@ function Form({ onPredictionComplete }) {
         />
       </div>
 
-      <div className="form-group">
-        <label htmlFor="gender">Gender</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="gender">Gender</label>
         <select
+          className={fieldInputClass}
           id="gender"
           name="gender"
           value={formData.gender}
@@ -117,9 +149,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="race">Race</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="race">Race</label>
         <select
+          className={fieldInputClass}
           id="race"
           name="race"
           value={formData.race}
@@ -134,9 +167,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="youth">Youth</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="youth">Youth</label>
         <select
+          className={fieldInputClass}
           id="youth"
           name="youth"
           value={formData.youth}
@@ -148,9 +182,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="indigenous_flag">Indigenous Flag</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="indigenous_flag">Indigenous Flag</label>
         <select
+          className={fieldInputClass}
           id="indigenous_flag"
           name="indigenous_flag"
           value={formData.indigenous_flag}
@@ -162,9 +197,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="lgbtq">LGBTQ</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="lgbtq">LGBTQ</label>
         <select
+          className={fieldInputClass}
           id="lgbtq"
           name="lgbtq"
           value={formData.lgbtq}
@@ -176,9 +212,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="immigrant">Immigrant</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="immigrant">Immigrant</label>
         <select
+          className={fieldInputClass}
           id="immigrant"
           name="immigrant"
           value={formData.immigrant}
@@ -190,9 +227,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="years_homeless">Years Homeless</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="years_homeless">Years Homeless</label>
         <input
+          className={fieldInputClass}
           type="number"
           id="years_homeless"
           name="years_homeless"
@@ -208,9 +246,10 @@ function Form({ onPredictionComplete }) {
   // Page 2: Homelessness and Risk Factors (8 fields)
   const page2Fields = (
     <>
-      <div className="form-group">
-        <label htmlFor="outdoor_sleeping">Outdoor Sleeping</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="outdoor_sleeping">Outdoor Sleeping</label>
         <select
+          className={fieldInputClass}
           id="outdoor_sleeping"
           name="outdoor_sleeping"
           value={formData.outdoor_sleeping}
@@ -222,9 +261,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="shelter_type">Shelter Type</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="shelter_type">Shelter Type</label>
         <select
+          className={fieldInputClass}
           id="shelter_type"
           name="shelter_type"
           value={formData.shelter_type}
@@ -238,9 +278,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="foster_care_history">Foster Care History</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="foster_care_history">Foster Care History</label>
         <select
+          className={fieldInputClass}
           id="foster_care_history"
           name="foster_care_history"
           value={formData.foster_care_history}
@@ -252,9 +293,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="incarceration_history">Incarceration History</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="incarceration_history">Incarceration History</label>
         <select
+          className={fieldInputClass}
           id="incarceration_history"
           name="incarceration_history"
           value={formData.incarceration_history}
@@ -266,9 +308,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="mental_health">Mental Health</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="mental_health">Mental Health</label>
         <select
+          className={fieldInputClass}
           id="mental_health"
           name="mental_health"
           value={formData.mental_health}
@@ -280,9 +323,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="substance_use">Substance Use</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="substance_use">Substance Use</label>
         <select
+          className={fieldInputClass}
           id="substance_use"
           name="substance_use"
           value={formData.substance_use}
@@ -294,9 +338,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="no_income">No Income</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="no_income">No Income</label>
         <select
+          className={fieldInputClass}
           id="no_income"
           name="no_income"
           value={formData.no_income}
@@ -308,9 +353,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="housing_loss_income">Housing Loss Due to Income</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="housing_loss_income">Housing Loss Due to Income</label>
         <select
+          className={fieldInputClass}
           id="housing_loss_income"
           name="housing_loss_income"
           value={formData.housing_loss_income}
@@ -322,9 +368,10 @@ function Form({ onPredictionComplete }) {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="housing_loss_health">Housing Loss Due to Health</label>
+      <div className={fieldWrapperClass}>
+        <label className={fieldLabelClass} htmlFor="housing_loss_health">Housing Loss Due to Health</label>
         <select
+          className={fieldInputClass}
           id="housing_loss_health"
           name="housing_loss_health"
           value={formData.housing_loss_health}
@@ -338,28 +385,22 @@ function Form({ onPredictionComplete }) {
     </>
   )
 
-  // Page 3: Final Field (0 fields)
-  const page3Fields = (
-    <>
-    </>
-  )
-
   return (
-    <div className="form-container">
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-header">
-          <h2>Page {currentPage} of 2</h2>
+    <div className="mx-auto w-full max-w-6xl px-2 sm:px-4">
+      <form onSubmit={handleSubmit} className="mb-6 rounded-lg bg-white p-4 shadow-md sm:p-6 lg:p-8">
+        <div className="mb-8 text-center">
+          <h2 className="m-0 text-2xl font-semibold text-gray-800">Page {currentPage} of 2</h2>
         </div>
 
-        <div className="form-grid">
+        <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {currentPage === 1 && page1Fields}
           {currentPage === 2 && page2Fields}
         </div>
 
         {currentPage === 2 && (
-          <button 
-            type="submit" 
-            className="submit-button"
+          <button
+            type="submit"
+            className="w-full rounded-md bg-red-600 px-8 py-3 text-base font-semibold text-white transition hover:bg-red-700 active:bg-red-800 disabled:cursor-not-allowed disabled:bg-red-300 disabled:opacity-70"
             disabled={loading}
           >
             {loading ? 'Analyzing...' : 'Enter'}
@@ -367,10 +408,10 @@ function Form({ onPredictionComplete }) {
         )}
       </form>
 
-      <div className="form-buttons">
+      <div className="mt-4 flex gap-4">
         <button
           type="button"
-          className="nav-button prev-button"
+          className="flex-1 rounded-md bg-gray-200 px-6 py-3 text-base font-semibold text-gray-700 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
           onClick={handlePrev}
           disabled={currentPage === 1}
         >
@@ -380,7 +421,7 @@ function Form({ onPredictionComplete }) {
         {currentPage === 1 && (
           <button
             type="button"
-            className="nav-button next-button"
+            className="flex-1 rounded-md bg-gray-200 px-6 py-3 text-base font-semibold text-gray-700 transition hover:bg-gray-300"
             onClick={handleNext}
           >
             Next
